@@ -1,9 +1,7 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
-
 #include <string>
 #include <vector>
-
 using namespace std;
 
 void setColor(int textColor, int bgColor);
@@ -15,5 +13,7 @@ double f(const vector<double>& coef, double x);
 double fprime(const vector<double>& coef, double x);
 void printPolynomial(const vector<double>& coef);
 vector<double> inputPolynomial();
+void displayMatrixRain();
+  
 
 #endif

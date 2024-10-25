@@ -1,202 +1,179 @@
 #include "non_linear_eqs.hpp"
+#include "utils.hpp"
 #include <bits/stdc++.h>
+#include <math.h>
+const double tolerance = 0.00001;
 using namespace std;
-const double max_tolerence = 0.00001;
 
-double a=1,b=-3,c=0,d=2;
-double f(double x)
-{
-    return x * x - 3 * x + 2; // f(x) = x^2 - 3x + 2
-}
-double f_prime(double x)
-{
-    return 2 * x - 3; // f'(x) = 2x - 3
-}
-void bisection(double a, double b)
-{
-    cout << "Using Bisection Method:" << endl;
-    if (f(a) * f(b) >= 0)
-    {
-        cerr << "The function does not change sign on the interval." << endl;
+void bisection(vector<double> coefficient_matrix){
+    double xMax = sqrt( (coefficient_matrix[1] / coefficient_matrix[0]) * (coefficient_matrix[1] / coefficient_matrix[0])  - 2 * (coefficient_matrix[2] / coefficient_matrix[0]) );
+    double a = -xMax;
+    double b = xMax;
+    cout << "[+] - Search interval for root = [" << a << ", " << b << "]" << endl;
+    if(isnan(a) || isnan(b)){
+        cerr << "[!] - No Solution" << endl;
         return;
     }
-    int iteration = 0;
-    int flag = 0;
-    double old_x = a;
+    if (f(coefficient_matrix, a) * f(coefficient_matrix, b) >= 0){
+        cerr << "[!] - The function does not change sign on the interval" << endl;
+        return;
+    }
+    int itr = 0;
     while (true)
     {
-        iteration++;
+        itr++;
         double x = (a + b) / 2;
-        // cout << "a = " << a << " " << "b = " << b << " ";
-        // cout << "Approximate Root = " << x << " " << f(x);
-        // if (flag)
-        // {
-        //     cout << " error = " << x - old_x;
-        // }
-        cout << endl;
-        if (f(x) == 0.0)
-        {
-            cout << " Root = " << x << endl;
-           // cout << "Iteration = " << iteration << endl;
+        double f_x = f(coefficient_matrix, x);
+        
+        if(fabs(f_x) <= tolerance){
+            cout << "[+] - Root : " << x << endl;
+            cout << "[+] - Iteration Required : " << itr << endl;
             return;
         }
-        else if (f(x) * f(a) < 0)
+
+        if(f(coefficient_matrix, a) * f_x < 0){
             b = x;
-        else if (f(x) * f(b) < 0)
+        }else{
             a = x;
-        if (fabs(x - old_x) <= max_tolerence)
-        {
-            cout << " Root = " << x << endl;
-            //cout << "Iteration = " << iteration << endl;
-            return;
         }
-        old_x = x;
-        flag = 1;
     }
 }
 
-void false_position(double a, double b)
-{
-    cout << "Using False Position Method:" << endl;
-    if (f(a) * f(b) >= 0)
-    {
-        cerr << "The function does not change sign on the interval." << endl;
+void false_position(vector<double> coefficient_matrix, double tolerance = 0.0001){
+    double xMax = sqrt( (coefficient_matrix[1] / coefficient_matrix[0]) * (coefficient_matrix[1] / coefficient_matrix[0])  - 2 * (coefficient_matrix[2] / coefficient_matrix[0]) );
+
+    double a = -xMax;
+    double b = xMax;
+
+    cout << "[+] - Search interval for root = [" << a << ", " << b << "]" << endl;
+
+    if (f(coefficient_matrix, a) * f(coefficient_matrix, b) >= 0){
+        cerr << "[!] - The function does not change sign on the interval" << endl;
         return;
     }
-    int iteration = 0, flag = 0;
-    double old_x = a;
+    int itr = 0;
     while (true)
     {
-        iteration++;
-        double x = (a * f(b) - b * f(a)) / (f(b) - f(a));
-        // cout << "a = " << a << " " << "b = " << b << " ";
-        // cout << "Approximate Root = " << x<<" "<<f(x);
-        // if (flag)
-        // {
-        //     cout << " error = " << x - old_x;
-        // }
-        cout << endl;
-        if (f(x) == 0.0)
-        {
-            cout << " Root = " << x << endl;
-           // cout << "Iteration = " << iteration << endl;
+        itr++;
+        double x = (a * f(coefficient_matrix, b) - b * f(coefficient_matrix, a)) / (f(coefficient_matrix, b) - f(coefficient_matrix, a));
+        double f_x = f(coefficient_matrix, x);
+        
+        if(fabs(f_x) <= tolerance){
+            cout << "[+] - Root : " << x << endl;
+            cout << "[+] - Iteration Required : " << itr << endl;
             return;
         }
-        else if (f(x) * f(a) < 0)
+
+        if(f(coefficient_matrix, a) * f_x < 0){
             b = x;
-        else if (f(x) * f(b) < 0)
+        }else{
             a = x;
-        if (fabs(x - old_x) <= max_tolerence)
-        {
-            cout << " Root = " << x << endl;
-            //cout << "Iteration = " << iteration << endl;
-            return;
         }
-        old_x = x;
-        flag = 1;
     }
 }
 
-void newton_raphson()
-{
-    cout << "Using Newton Raphson Method:" << endl;
-    int iteration = 0;
-    double x = 1.5; // Initial guess
-    double old_x = 0;
-
+void newton_raphson(vector<double> coefficient_matrix, double tolerance = 0.0001){
+    int itr = 0;
+    double x = 0.0;
     while (true)
     {
-        iteration++;
-        old_x = x;
-
+        itr++;
+        double f_x = f(coefficient_matrix, x);
+        double f_prime_x = fprime(coefficient_matrix, x);
         // Newton-Raphson update formula
-        x = old_x - (f(old_x) / f_prime(old_x));
+        double x_new = x - f_x / f_prime_x;
 
-        // If x is close enough to zero, set it to zero for precision
-        if (fabs(x) < max_tolerence)
-        {
-            x = 0.0;
-        }
-
-        // Print the approximation and f(x)
-        // cout << "Approximate Root = " << x << " " << f(x) << std::endl;
-
-        // Check for convergence to root
-        if (fabs(f(x)) < max_tolerence || fabs(x - old_x) <= max_tolerence)
-        {
-            cout << "Root = " << x << std::endl;
-          //  cout << "Iterations = " << iteration << std::endl;
+        if(fabs(x_new - x) <= tolerance || fabs(f_x) <= tolerance){
+            cout << "[+] - Root : " << x_new << endl;
+            cout << "[+] - Iteration Required : " << itr << endl;
             return;
         }
+
+        x = x_new;
     }
 }
 
-void secant()
+void secant(vector<double> coefficient_matrix, double tolerance = 0.0001)
 {
-    cout << "Using Secant Method:" << endl;
-    int iteration = 0;
-    double x1 = 0.5, x2 = 1.5, old_x = 0;
+    double x0 = 0.0;
+    double x1 = 1.0;
+    int itr = 0;
     while (true)
     {
-        iteration++;
-        double x = x2 - ((f(x2) * (x2 - x1)) / (f(x2) - f(x1)));
-        if (fabs(x) < max_tolerence)
-            x = 0.0;
-        // cout << "Approximate Root = " << x << " " << f(x) << endl;
-        if (f(x) == 0.0)
-        {
-            cout << " Root = " << x << endl;
-         //   cout << "Iteration = " << iteration << endl;
+        itr++;
+        double f_x0 = f(coefficient_matrix, x0);
+        double f_x1 = f(coefficient_matrix, x1);
+        double x2 = x1 - f_x1 * (x1 - x0) / (f_x1 - f_x0);
+
+        if(fabs(x2 - x1) <= tolerance || fabs(f_x1) <= tolerance){
+            cout << "[+] - Root : " << x2 << endl;
+            cout << "[+] - Iteration Required : " << itr << endl;
             return;
         }
-        if (fabs(x - x2) <= max_tolerence)
-        {
-            cout << "Root = " << x << endl;
-        //  cout << "Iteration = " << iteration << endl;
-            return;
-        }
+        x0 = x1;
         x1 = x2;
-        old_x = x2 = x;
     }
 }
-void solveNonLinearEquations()
-{
-    cout<<"Solving Non-Linear Equations"<<endl;
-    cout<<"1. Bi-section Method"<<endl;
-    cout<<"2. False Position Method"<<endl;
-    cout<<"3. Newton-Raphson Method"<<endl;
-    cout<<"4. Secant Method"<<endl;
-    cout<<"Which method do you want to use?"<<endl;
-    int choice;
-    cin>>choice;
+ 
+void displayNonLinearEquationsMenu() {
+    clearScreen();
+    srand(time(0)); 
+    displayMatrixRain();
+    cout << "\n";
+    cout << "\t ==============================" << endl;
+    cout << "\t|                              |" << endl;
+    cout << "\t  ";
+    printText("\033[35m Solve Non-Linear Equations \033[0m", 0, 2, true);
+    cout << endl;
+    cout << "\t|                              |" << endl;
+    cout << "\t ============================== " << endl << endl;
+}
 
-    if(choice==1) {
-        double xMax=abs(sqrt(((b/a)*(b/a))-(2*(c/a))));
-        for(int i=-xMax; i<xMax; i++)
-        {
-            if (f(i) * f(i + 1) < 0)
-            {
-                a = i;
-                b = i + 1;
-                break;
-            }
+void solveNonLinearEquations(){
+    displayNonLinearEquationsMenu();
+    cout << "\t>> Choose a option:\n\n";
+    cout << "\t1. Bi-section Method\n";
+    cout << "\t2. False Position Method\n";
+    cout << "\t3. Newton-Raphson Method\n";
+    cout << "\t4. Secant Method\n";
+    cout << "\t5. Go Back to Main Menu\n";
+    cout << "\n";
+    printText("\t\033[35m<< Enter your choice (1-5) \033>>>", 0, 2);
+    cout << endl;
+    int choice;
+    while(true) {
+        choice = getChar();
+        if (choice >= '1' && choice <= '8') {
+            choice -= '0';
+            break;
         }
-    bisection(a,b);
     }
-    else if(choice==2){
-        double xMax=abs(sqrt(((b/a)*(b/a))-(2*(c/a))));
-        for(int i=-xMax; i<xMax; i++)
-        {
-            if (f(i) * f(i + 1) < 0)
-            {
-                a = i;
-                b = i + 1;
-                break;
-            }
-        }
-        false_position(a,b);
+    if(choice == 5) {
+        return;
     }
-    else if(choice==3)newton_raphson();
-    else if(choice==4)secant();
-    return;
+    cout << endl;
+        if(choice==1)
+            cout << "[+] - Bi-section Method selected." << endl;
+       else if(choice==2)
+            cout << "[+] - False Position selected." << endl;
+       else if(choice==3)
+            cout << "[+] - Newton-Raphson Method selected." << endl;
+        else if(choice==4)
+            cout << "[+] - Secant Method selected." << endl;
+    vector<double> coefficient_matrix;
+    coefficient_matrix = inputPolynomial();
+    cout << "[+] - Equation: ";
+    printPolynomial(coefficient_matrix);
+    cout << endl;
+       if(choice==1)
+            bisection(coefficient_matrix);
+          else if(choice==2)
+            false_position(coefficient_matrix);
+          else if(choice==3)
+            newton_raphson(coefficient_matrix);
+         else if(choice==4)
+            secant(coefficient_matrix);
+
+    cout << endl << "Press any key to continue..." << endl;
+    getChar();
 }
