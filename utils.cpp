@@ -1,60 +1,92 @@
 #include "utils.hpp"
 #include <iostream>
 #include <vector>
+#include <conio.h>
+#include <windows.h>
 
-// Function to print a matrix
-void printMatrix(const std::vector<std::vector<double>>& matrix) {
-    std::cout << "Matrix:\n";
-    for (const auto& row : matrix) {
-        for (double elem : row) {
-            std::cout << elem << "\t";
+using namespace std;
+
+void setColor(int textColor, int bgColor) {
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (bgColor << 4) | textColor);
+}
+
+void printText(string text, int bgColor = 0, int textColor = 7, bool bold = false) {
+    setColor(textColor, bgColor);
+    if(bold) {
+        cout << "\e[32;1m";
+    }
+    cout << text;
+    if(bold) {
+        cout << "\e[0m";
+    }
+    setColor(7, 0);
+}
+
+void printText(string text, int bgColor = 0, int textColor = 7) {
+    printText(text, bgColor, textColor, false);
+}
+
+void clearScreen() {
+    system("cls");
+}
+
+char getChar() {
+    return _getch();
+}
+
+double f(const vector<double>& coef, double x) {
+    double result = 0.0;
+    double power = 1.0;
+    for (int i = coef.size() - 1; i >= 0; --i) {
+        result += coef[i] * power;
+        power *= x;
+    }
+    return result;
+}
+
+double fprime(const vector<double>& coef, double x) {
+    double result = 0.0;
+    double power = 1.0;
+    for (int i = coef.size() - 1; i > 0; --i) {
+        result += (coef.size() - i) * coef[i] * power;
+        power *= x;
+    }
+    return result;
+}
+
+void printPolynomial(const vector<double>& coef) {
+    bool first = true;
+    for (int i = 0; i < coef.size(); ++i) {
+        if (coef[i] != 0) {
+            if (!first && coef[i] > 0) {
+                cout << " + ";
+            } else if (coef[i] < 0) {
+                cout << " - ";
+            }
+            if (abs(coef[i]) != 1 || i == coef.size() - 1) {
+                cout << abs(coef[i]);
+            }
+            if (i < coef.size() - 1) {
+                cout << "x";
+                if (i < coef.size() - 2) {
+                    cout << "^" << (coef.size() - 1 - i);
+                }
+            }
+            first = false;
         }
-        std::cout << "\n";
     }
+    cout << endl;
 }
 
-// Function to ask user for a choice (integer input)
-int askChoice(const std::string& prompt, int min, int max) {
-    int choice;
-    do {
-        std::cout << prompt << " (" << min << " - " << max << "): ";
-        std::cin >> choice;
-        if (choice < min || choice > max) {
-            std::cout << "Invalid choice. Try again.\n";
-        }
-    } while (choice < min || choice > max);
-    return choice;
-}
 
-// Function to get input for a matrix
-std::vector<std::vector<double>> inputMatrix(int rows, int cols) {
-    std::vector<std::vector<double>> matrix(rows, std::vector<double>(cols));
-    std::cout << "Enter the matrix elements row by row:\n";
-    for (int i = 0; i < rows; ++i) {
-        for (int j = 0; j < cols; ++j) {
-            std::cout << "Element [" << i + 1 << "][" << j + 1 << "]: ";
-            std::cin >> matrix[i][j];
-        }
+vector<double> inputPolynomial() {
+    int degree;
+    cout << "[+] - Enter the degree of the polynomial: ";
+    cin >> degree;
+    cout << "[+] - Enter the " << degree+1 << " coefficients (from highest to lowest degree)\n  >> ";
+    vector<double> coef(degree + 1);
+    for (int i = 0; i <= degree; ++i) {
+        cin >> coef[i];
     }
-    return matrix;
-}
-
-// Function to get input vector
-std::vector<double> inputVector(int size) {
-    std::vector<double> vec(size);
-    std::cout << "Enter the elements of the vector:\n";
-    for (int i = 0; i < size; ++i) {
-        std::cout << "Element [" << i + 1 << "]: ";
-        std::cin >> vec[i];
-    }
-    return vec;
-}
-
-// Utility to print a vector
-void printVector(const std::vector<double>& vec) {
-    std::cout << "Vector: [ ";
-    for (double elem : vec) {
-        std::cout << elem << " ";
-    }
-    std::cout << "]\n";
+    return coef;
 }
