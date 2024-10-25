@@ -3,45 +3,74 @@
 #include "non_linear_eqs.hpp"
 #include "diff_eqs.hpp"
 #include "matrix_inversion.hpp"
+#include "utils.hpp"
 
 using namespace std;
 
 void displayMenu() {
-    cout << "Numerical Methods Console Application\n";
-    cout << "1. Solve Linear Equations\n";
-    cout << "2. Solve Non-Linear Equations\n";
-    cout << "3. Solve Differential Equations\n";
-    cout << "4. Matrix Inversion\n";
-    cout << "5. Exit\n";
+    clearScreen();
+    cout << "\n";
+    cout << "\t ==============================" << endl;
+    cout << "\t|                              |" << endl;
+    cout << "\t    ";
+    printText("Numerical Methods Project", 0, 2, true);
+    cout << endl;
+    cout << "\t|                              |" << endl;
+    cout << "\t ============================== " << endl;
+
+    cout << "\n";
+    cout << "\t  1. Solve Linear Equations" << endl;
+    cout << "\t  2. Solve Non-Linear Equations" << endl;
+    cout << "\t  3. Solve Differential Equations" << endl;
+    cout << "\t  4. Matrix Inversion" << endl;
+    cout << "\t  5. Quit" << endl;
+    cout << "\n";
+
+    printText("Press a key (1-5) to select an Option", 0, 2);
+
+    cout << "\n";
 }
 
+void exitScreen() {
+    cout << "\n\n";
+    cout << "\t ==============================" << endl;
+    cout << "\t|                              |" << endl;
+    cout << "\t      ";
+    printText("Thank you ... (-_-)", 0, 2);
+    cout << endl;
+    cout << "\t|                              |" << endl;
+    cout << "\t ============================== " << endl;
+    cout << "\n";
+    exit(0);
+}
+
+
 int main() {
-    int choice;
-    do {
+    char choice;
+
+    while (true) {
         displayMenu();
-        cout << "Enter your choice: ";
-        cin >> choice;
+        choice = getChar();
+        clearScreen();
         
         switch(choice) {
-            case 1:
+            case '1':
                 solveLinearEquations();
                 break;
-            case 2:
+            case '2':
                 solveNonLinearEquations();
                 break;
-            case 3:
+            case '3':
                 solveDifferentialEquations();
                 break;
-            case 4:
+            case '4':
                 invertMatrix();
                 break;
-            case 5:
-                cout << "Exiting...\n";
+            case '5':
+                exitScreen();
                 break;
-            default:
-                cout << "Invalid choice. Try again.\n";
         }
-    } while (choice != 5);
+    }
 
     return 0;
 }
