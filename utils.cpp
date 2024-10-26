@@ -148,7 +148,7 @@ void displayMatrixRain() {
         cout << "\033[0m"; // Reset color
         this_thread::sleep_for(chrono::milliseconds(100)); // Control frame speed
     }
-   // cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\";
+    cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
 }
 
 
