@@ -47,6 +47,39 @@ void inputMatrix(vector<vector<double>> &A, vector<double> &b, int n, int iterat
     }
 }
 
+void makeDiagonallyDominant(vector<vector<double>>& A, vector<double>& B) {
+    int n = A.size();
+    
+    for (int i = 0; i < n; ++i) {
+        int maxRow = i;
+        double maxElement = fabs(A[i][i]);
+
+        for (int j = i + 1; j < n; ++j) {
+            if (fabs(A[j][i]) > maxElement) {
+                maxElement = fabs(A[j][i]);
+                maxRow = j;
+            }
+        }
+
+        if (maxRow != i) {
+            swap(A[i], A[maxRow]);
+            swap(B[i], B[maxRow]);
+        }
+
+        double sum = 0;
+        for (int j = 0; j < n; ++j) {
+            if (i != j) {
+                sum += fabs(A[i][j]);
+            }
+        }
+
+        if (fabs(A[i][i]) < sum) {
+            return ;
+        }
+    }
+    return;
+}
+
 
 bool Jacobi(vector<vector<double>> &A, vector<double> &b, vector<double> &x, int n, int iterations = 1000, double tolerance = 1e-4){
     vector<double> temp(n);
@@ -348,6 +381,7 @@ void solveLinearEquations() {
     switch (option){
         case 1:
             inputMatrix(A, b, n);
+            makeDiagonallyDominant(A, b);
             solvable = Jacobi(A, b, x, n);
             if(solvable){
                 display_answers(x);
@@ -358,6 +392,7 @@ void solveLinearEquations() {
             break;
         case 2:
             inputMatrix(A, b, n);
+            makeDiagonallyDominant(A, b);
             solvable = Gauss_Seidel(A, b, x, n);
             if(solvable){
                 display_answers(x);
