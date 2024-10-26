@@ -90,7 +90,7 @@ void rk_method(function<double(double, double)> func, double x0, double y0, doub
     double x = x0, y = y0;
 
     cout << "+---------------+---------------+" << endl;
-    cout << "|       x       |   y = f'(x)   |" << endl;
+    cout << "|       x       |    y = f(x)   |" << endl;
     cout << "+---------------+---------------+" << endl;
     cout << "| " << setw(13) << x << " | " << setw(13) << y << " |" << endl;
 
