@@ -32,7 +32,7 @@ void choice()
     cout << endl;
 }
 
-void inputMatrix(vector<vector<double>> &A, vector<double> &b, int n, int iterations = 1000, double tolerance = 1e-6)
+void inputMatrix(vector<vector<double>> &A, vector<double> &b, int n, int iterations = 1000, double tolerance = 1e-4)
 {
     cout << "Enter the coefficient matrix A" << endl;
     for (int i = 0; i < n; i++) {
@@ -47,7 +47,8 @@ void inputMatrix(vector<vector<double>> &A, vector<double> &b, int n, int iterat
     }
 }
 
-bool Jacobi(vector<vector<double>> &A, vector<double> &b, vector<double> &x, int n, int iterations = 1000, double tolerance = 1e-6){
+
+bool Jacobi(vector<vector<double>> &A, vector<double> &b, vector<double> &x, int n, int iterations = 1000, double tolerance = 1e-4){
     vector<double> temp(n);
     vector<double> error(n);
     int itr = iterations;
@@ -67,17 +68,20 @@ bool Jacobi(vector<vector<double>> &A, vector<double> &b, vector<double> &x, int
             x[i] = (b[i] - sum) / A[i][i];
             error[i] = abs(x[i] - temp[i]);
         }
+        double total_error = 0;
+        for(auto it: error){
+            total_error += it;
+        }
+        if(total_error / n < tolerance) {
+            cout << "[+] - Equations converged in " << iterations - itr << " iterations." << endl;
+            return true;
+        }
     }
-    double total_error = 0;
-    for(auto it: error){
-        total_error += it;
-    }
-    if(total_error < tolerance) return true;
 
     return false;
 }
 
-bool Gauss_Seidel(vector<vector<double>> &A, vector<double> &b, vector<double> &x, int n, int iterations = 1000, double tolerance = 1e-6){
+bool Gauss_Seidel(vector<vector<double>> &A, vector<double> &b, vector<double> &x, int n, int iterations = 1000, double tolerance = 1e-4){
     vector<double> temp(n);
     vector<double> error(n);
     int itr = iterations;
@@ -96,14 +100,15 @@ bool Gauss_Seidel(vector<vector<double>> &A, vector<double> &b, vector<double> &
             x[i] = (b[i] - sum) / A[i][i];
             error[i] = abs(x[i] - temp[i]);
         }
-
+        double total_error = 0;
+        for(auto it: error){
+            total_error += it;
+        }
+        if(total_error / n < tolerance){
+            cout << "[+] - Equations converged in " << iterations - itr << " iterations." << endl;
+            return true;
+        }
     }
-    double total_error = 0;
-    for(auto it: error){
-        total_error += it;
-    }
-    if(total_error < tolerance) return true;
-
     return false;
 }
 
@@ -154,7 +159,7 @@ int Gauss_Elimination(vector<vector<double>>& A, vector<double>& B, vector<doubl
     printText("Gauss Eliminated Form of the Matrix\n", 0, 2, true);
     for(int i=0; i<n; i++){
         for(int j=0; j<n; j++){
-            std::cout << std::fixed << std::setprecision(4) << A[i][j] << " ";
+            cout << fixed << setprecision(4) << A[i][j] << " ";
         }
         cout << endl;
     }
@@ -233,6 +238,56 @@ int Gauss_Jordan_Elimination(vector<vector<double>>& A, vector<double>& B) {
     }
     return 0;
 }
+
+
+
+bool LU_Factorization(vector<vector<double>> &A, vector<double> &b, vector<double> &x){
+    int n = A.size();
+
+    if(n > 4){
+        cout << "LU Factorization is not available for n > 4" << endl;
+        return false;
+    }
+
+    if(n == 1){
+        if(A[0][0] == 0){
+            cout << "Determinant is zero, cannot solve the equations" << endl;
+            return false;
+        }
+        x[0] = b[0] / A[0][0];
+    }else if(n == 2){
+        double det = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+        if(det == 0){
+            cout << "Determinant is zero, cannot solve the equations" << endl;
+            return false;
+        }
+
+        x[0] = (A[1][1] * b[0] - A[0][1] * b[1]) / det;
+        x[1] = (A[0][0] * b[1] - A[1][0] * b[0]) / det;
+    }else if(n == 3){
+        double det = A[0][0] * (A[1][1] * A[2][2] - A[1][2] * A[2][1]) - A[0][1] * (A[1][0] * A[2][2] - A[1][2] * A[2][0]) + A[0][2] * (A[1][0] * A[2][1] - A[1][1] * A[2][0]);
+        if(det == 0){
+            cout << "Determinant is zero, cannot solve the equations" << endl;
+            return false;
+        }
+
+        x[0] = (b[0] * (A[1][1] * A[2][2] - A[1][2] * A[2][1]) - A[0][1] * (b[1] * A[2][2] - A[1][2] * b[2]) + A[0][2] * (b[1] * A[2][1] - A[1][1] * b[2])) / det;
+        x[1] = (A[0][0] * (b[1] * A[2][2] - A[1][2] * b[2]) - b[0] * (A[1][0] * A[2][2] - A[1][2] * A[2][0]) + A[0][2] * (A[1][0] * b[2] - b[1] * A[2][0])) / det;
+        x[2] = (A[0][0] * (A[1][1] * b[2] - b[1] * A[2][1]) - A[0][1] * (A[1][0] * b[2] - b[1] * A[2][0]) + b[0] * (A[1][0] * A[2][1] - A[1][1] * A[2][0])) / det;
+    }else if(n == 4){
+        double det = A[0][0] * (A[1][1] * (A[2][2] * A[3][3] - A[2][3] * A[3][2]) - A[1][2] * (A[2][1] * A[3][3] - A[2][3] * A[3][1]) + A[1][3] * (A[2][1] * A[3][2] - A[2][2] * A[3][1])) - A[0][1] * (A[1][0] * (A[2][2] * A[3][3] - A[2][3] * A[3][2]) - A[1][2] * (A[2][0] * A[3][3] - A[2][3] * A[3][0]) + A[1][3] * (A[2][0] * A[3][2] - A[2][2] * A[3][0])) + A[0][2] * (A[1][0] * (A[2][1] * A[3][3] - A[2][3] * A[3][1]) - A[1][1] * (A[2][0] * A[3][3] - A[2][3] * A[3][0]) + A[1][3] * (A[2][0] * A[3][1] - A[2][1] * A[3][0])) - A[0][3] * (A[1][0] * (A[2][1] * A[3][2] - A[2][2] * A[3][1]) - A[1][1] * (A[2][0] * A[3][2] - A[2][2] * A[3][0]) + A[1][2] * (A[2][0] * A[3][1] - A[2][1] * A[3][0]));
+        if(det == 0){
+            cout << "Determinant is zero, cannot solve the equations" << endl;
+            return false;
+        }
+
+        x[0] = (b[0] * (A[1][1] * (A[2][2] * A[3][3] - A[2][3] * A[3][2]) - A[1][2] * (A[2][1] * A[3][3] - A[2][3] * A[3][1]) + A[1][3] * (A[2][1] * A[3][2] - A[2][2] * A[3][1])) - A[0][1] * (b[1] * (A[2][2] * A[3][3] - A[2][3] * A[3][2]) - A[1][2] * (b[2] * A[3][3] - A[2][3] * b[3]) + A[1][3] * (b[2] * A[3][2] - A[2][2] * b[3])) + A[0][2] * (b[1] * (A[2][1] * A[3][3] - A[2][3] * A[3][1]) - A[1][1] * (b[2] * A[3][3] - A[2][3] * b[3]) + A[1][3] * (b[2] * A[3][1] - A[2][1] * b[3])) - A[0][3] * (b[1] * (A[2][1] * A[3][2] - A[2][2] * A[3][1]) - A[1][1] * (b[2] * A[3][2] - A[2][2] * b[3]) + A[1][2] * (b[2] * A[3][1] - A[2][1] * b[3]))) / det;
+        x[1] = (A[0][0] * (b[1] * (A[2][2] * A[3][3] - A[2][3] * A[3][2]) - A[1][2] * (b[2] * A[3][3] - A[2][3] * b[3]) + A[1][3] * (b[2] * A[3][2] - A[2][2] * b[3])) - b[0] * (A[1][0] * (A[2][2] * A[3][3] - A[2][3] * A[3][2]) - A[1][2] * (A[2][0] * A[3][3] - A[2][3] * A[3][0]) + A[1][3] * (A[2][0] * A[3][2] - A[2][2] * A[3][0])) + A[0][2] * (A[1][0] * (b[2] * A[3][3] - A[2][3] * b[3]) - b[1] * (A[2][0] * A[3][3] - A[2][3] * A[3][0]) + A[1][3] * (A[2][0] * b[3] - b[2] * A[3][0])) - A[0][3] * (A[1][0] * (b[2] * A[3][2] - A[2][2] * b[3]) - A[1][2] * (A[2][0] * b[3] - b[2] * A[3][0]) + b[1] * (A[2][0] * A[3][2] - A[2][2] * A[3][0]))) / det;
+        x[2] = (A[0][0] * (A[1][1] * (b[2] * A[3][3] - A[2][3] * b[3]) - b[1] * (A[2][1] * A[3][3] - A[2][3] * A[3][1]) + A[1][3] * (A[2][1] * b[3] - b[2] * A[3][1])) - A[0][1] * (A[1][0] * (b[2] * A[3][3] - A[2][3] * b[3]) - b[1] * (A[2][0] * A[3][3] - A[2][3] * A[3][0]) + A[1][3] * (A[2][0] * b[3] - b[2] * A[3][0])) + b[0] * (A[1][0] * (A[2][1] * A[3][3] - A[2][3] * A[3][1]) - A[1][1] * (A[2][0] * A[3][3] - A[2][3] * A[3][0]) + A[1][3] * (A[2][0] * A[3][1] - A[2][1] * A[3][0])) - A[0][3] * (A[1][0] * (A[2][1] * b[3] - b[2] * A[3][1]) - A[1][1] * (A[2][0] * b[3] - b[2] * A[3][0]) + b[1] * (A[2][0] * A[3][1] - A[2][1] * A[3][0]))) / det;
+        x[3] = (A[0][0] * (A[1][1] * (A[2][2] * b[3] - b[2] * A[3][2]) - A[1][2] * (A[2][1] * b[3] - b[2] * A[3][1]) + b[1] * (A[2][1] * A[3][2] - A[2][2] * A[3][1])) - A[0][1] * (A[1][0] * (A[2][2] * b[3] - b[2] * A[3][2]) - A[1][2] * (A[2][0] * b[3] - b[2] * A[3][0]) + b[1] * (A[2][0] * A[3][2] - A[2][2] * A[3][0])) + A[0][2] * (A[1][0] * (A[2][1] * b[3] - b[2] * A[3][1]) - A[1][1] * (A[2][0] * b[3] - b[2] * A[3][0]) + b[1] * (A[2][0] * A[3][1] - A[2][1] * A[3][0])) - b[0] * (A[1][0] * (A[2][1] * A[3][2] - A[2][2] * A[3][1]) - A[1][1] * (A[2][0] * A[3][2] - A[2][2] * A[3][0]) + A[1][2] * (A[2][0] * A[3][1] - A[2][1] * A[3][0]))) / det;
+    }
+    return true;
+};
 
 void display_answers(vector<double> &x)
 {
@@ -338,7 +393,10 @@ void solveLinearEquations() {
             }
             break;
         case 5:
-            cout << "[+] - Coming SOON" << endl;
+            inputMatrix(A, b, n);
+            if(LU_Factorization(A, b, x)){
+                display_answers(x);
+            }
             break;
     }
 
