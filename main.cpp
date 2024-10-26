@@ -46,6 +46,10 @@ void exitScreen() {
 
 
 int main() {
+    srand(time(0));
+    displayMatrixRain();
+    clearScreen();
+
     char choice;
 
     while (true) {
