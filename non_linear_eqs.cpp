@@ -106,8 +106,8 @@ void newton_raphson(vector<double> coef)
 
 void secant(vector<double> coef)
 {
-      int x0,x1;
- cout<<"Enter initial guess x0 & x1: ";
+    int x0,x1;
+    cout<<"Enter initial guess x0 & x1: ";
     cin>>x0>>x1;
     int itr = 0;
     while (true)
@@ -116,9 +116,9 @@ void secant(vector<double> coef)
         double f_x0 = f(coef, x0);
         double f_x1 = f(coef, x1);
         double x2 = x1 - f_x1 * (x1 - x0) / (f_x1 - f_x0);
-         if (fabs(x2) < tolerance)
+        if (fabs(x2) < tolerance)
             x2 = 0.0;
-        if (fabs(x2 - x1) <= tolerance || f(coef,x2) ==0.0)
+        if (fabs(x2 - x1) <= tolerance || fabs(f(coef, x2)) <= tolerance)
         {
             cout <<fixed<<setprecision(4)<< "[+] - Root : " << x2 << endl;
             cout << "[+] - Iteration Required : " << itr << endl;
