@@ -107,27 +107,50 @@ bool Gauss_Seidel(vector<vector<double>> &A, vector<double> &b, vector<double> &
     return false;
 }
 
-vector<double> Gauss_Elimination(vector<vector<double>>& A, vector<double>& b) {
+int Gauss_Elimination(vector<vector<double>>& A, vector<double>& B, vector<double>& x) {
     int n = A.size();
+    double EPSILON = 1e-9;
 
-    for (int i = 0; i < n; ++i) {
-        int maxRow = i;
-        for (int k = i + 1; k < n; ++k) {
-            if (fabs(A[k][i]) > fabs(A[maxRow][i])) {
-                maxRow = k;
+    for (int col = 0; col < n; ++col) {
+        int pivot = col;
+        for (int i = col + 1; i < n; ++i) {
+            if (fabs(A[i][col]) > fabs(A[pivot][col])) {
+                pivot = i;
             }
         }
-        swap(A[i], A[maxRow]);
-        swap(b[i], b[maxRow]);
 
-        for (int k = i + 1; k < n; ++k) {
-            double factor = A[k][i] / A[i][i];
-            for (int j = i; j < n; ++j) {
-                A[k][j] -= factor * A[i][j];
+        if (fabs(A[pivot][col]) < EPSILON) {
+            continue;
+        }
+
+        swap(A[col], A[pivot]);
+        swap(B[col], B[pivot]);
+
+        for (int i = col + 1; i < n; ++i) {
+            double factor = A[i][col] / A[col][col];
+            for (int j = col; j < n; ++j) {
+                A[i][j] -= factor * A[col][j];
             }
-            b[k] -= factor * b[i];
+            B[i] -= factor * B[col];
         }
     }
+
+    for (int i = 0; i < n; ++i) {
+        bool allZero = true;
+        for (int j = 0; j < n; ++j) {
+            if (fabs(A[i][j]) > EPSILON) {
+                allZero = false;
+                break;
+            }
+        }
+        if (allZero && fabs(B[i]) > EPSILON) {
+            return -1;
+        }
+        if (allZero && fabs(B[i]) < EPSILON) {
+            return 1;
+        }
+    }
+    
     printText("Gauss Eliminated Form of the Matrix\n", 0, 2, true);
     for(int i=0; i<n; i++){
         for(int j=0; j<n; j++){
@@ -136,56 +159,79 @@ vector<double> Gauss_Elimination(vector<vector<double>>& A, vector<double>& b) {
         cout << endl;
     }
 
-    vector<double> x(n);
     for (int i = n - 1; i >= 0; --i) {
-        x[i] = b[i];
+        x[i] = B[i];
         for (int j = i + 1; j < n; ++j) {
             x[i] -= A[i][j] * x[j];
         }
         x[i] /= A[i][i];
     }
 
-    return x;
+    return 0;
 }
 
-void Gauss_Jordan_Elimination(vector<vector<double>>& A, vector<double>& b) {
+int Gauss_Jordan_Elimination(vector<vector<double>>& A, vector<double>& B) {
     int n = A.size();
+    int m = A[0].size();
+    double EPSILON = 1e-9;
 
-    for (int i = 0; i < n; ++i) {
-        int maxRow = i;
-        for (int k = i + 1; k < n; ++k) {
-            if (fabs(A[k][i]) > fabs(A[maxRow][i])) {
-                maxRow = k;
+    for (int col = 0; col < n; ++col) {
+        int pivot = col;
+        for (int i = col + 1; i < n; ++i) {
+            if (fabs(A[i][col]) > fabs(A[pivot][col])) {
+                pivot = i;
             }
         }
 
-        swap(A[i], A[maxRow]);
-        swap(b[i], b[maxRow]);
-
-        double pivot = A[i][i];
-        for (int j = 0; j < n; ++j) {
-            A[i][j] /= pivot;
+        if (fabs(A[pivot][col]) < EPSILON) {
+            continue;
         }
-        b[i] /= pivot;
 
-        for (int k = 0; k < n; ++k) {
-            if (k != i) {
-                double factor = A[k][i];
-                for (int j = 0; j < n; ++j) {
-                    A[k][j] -= factor * A[i][j];
+        swap(A[col], A[pivot]);
+        swap(B[col], B[pivot]);
+
+        double pivotValue = A[col][col];
+        for (int j = 0; j < m; ++j) {
+            A[col][j] /= pivotValue;
+        }
+        B[col] /= pivotValue;
+
+        for (int i = 0; i < n; ++i) {
+            if (i != col) {
+                double factor = A[i][col];
+                for (int j = 0; j < m; ++j) {
+                    A[i][j] -= factor * A[col][j];
                 }
-                b[k] -= factor * b[i];
+                B[i] -= factor * B[col];
             }
         }
     }
+
+    for (int i = 0; i < n; ++i) {
+        bool allZero = true;
+        for (int j = 0; j < m; ++j) {
+            if (fabs(A[i][j]) > EPSILON) {
+                allZero = false;
+                break;
+            }
+        }
+        if (allZero && fabs(B[i]) > EPSILON) {
+            return -1;
+        }
+        if (allZero && fabs(B[i]) < EPSILON) {
+            return 1;
+        }
+    }
+
     printText("Gauss-Jordan Eliminated Form of the Matrix\n", 0, 2, true);
     for(int i=0; i<n; i++){
         for(int j=0; j<n; j++){
             cout << fixed << setprecision(4);
-            cout << A[i][j] << " ";
+            cout << abs(A[i][j]) << " ";
         }
         cout << endl;
     }
+    return 0;
 }
 
 void display_answers(vector<double> &x)
@@ -242,6 +288,7 @@ void solveLinearEquations() {
     vector<double> b(n);
     vector<double> x(n, 0.0);
     bool solvable;
+    int ans;
 
     switch (option){
         case 1:
@@ -266,13 +313,29 @@ void solveLinearEquations() {
             break;
         case 3:
             inputMatrix(A, b, n);
-            x = Gauss_Elimination(A, b);
-            display_answers(x);
+            ans = Gauss_Elimination(A, b, x);
+            if(ans == -1){
+                printText("No solution exists.\n", 0, 2, true);
+            }
+            else if(ans == 1){
+                printText("Infinitely many solutions exist.\n", 0, 2, true);
+            }
+            else{
+                display_answers(x);
+            }
             break;
         case 4:
             inputMatrix(A, b, n);
-            Gauss_Jordan_Elimination(A, b);
-            display_answers(b);
+            ans = Gauss_Jordan_Elimination(A, b);
+            if(ans == -1){
+                printText("No solution exists.\n", 0, 2, true);
+            }
+            else if(ans == 1){
+                printText("Infinitely many solutions exist.\n", 0, 2, true);
+            }
+            else{
+                display_answers(b);
+            }
             break;
         case 5:
             cout << "[+] - Coming SOON" << endl;
