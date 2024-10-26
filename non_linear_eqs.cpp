@@ -28,7 +28,7 @@ void bisection(vector<double> coef,double a,double b)
         if (fabs(x-old_x) <= tolerance|| f_x==0.0)
         {
             cout <<fixed<<setprecision(4)<< "[+] - Root : " << x << endl;
-            cout << "[+] - Iteration Required : " << itr << endl;
+            cout << "[+] - itr Required : " << itr << endl;
             return;
         }
 
@@ -62,7 +62,7 @@ void false_position(vector<double> coef,double a,double b)
         if (fabs(x-old_x) <= tolerance|| f_x==0.0)
         {
             cout <<fixed<<setprecision(4)<< "[+] - Root : " << x << endl;
-            cout << "[+] - Iteration Required : " << itr << endl;
+            cout << "[+] - itr Required : " << itr << endl;
             return;
         }
 
@@ -81,7 +81,7 @@ void false_position(vector<double> coef,double a,double b)
 
 void newton_raphson(vector<double> coef)
 {
-     int x;
+    double x;
     cout<<"Enter initial guess x0: ";
     cin>>x;
     int itr = 0;
@@ -92,12 +92,17 @@ void newton_raphson(vector<double> coef)
         double f_prime_x = fprime(coef, x);
         // Newton-Raphson update formula
         double x_new = x - f_x / f_prime_x;
-         if (fabs(x_new) < tolerance)
+        if (fabs(x_new) < tolerance)
             x = 0.0;
-        if (fabs(x_new - x) <= tolerance ||f(coef,x_new) == 0.0)
+        if(f(coef,x_new) == 0.0){
+            cout  <<fixed<<setprecision(4)<< "[+] - Root : " << x_new << endl;
+            cout << "[+] - itr Required : " << itr << endl;
+            return; 
+        }
+        if (fabs(x_new - x) <= tolerance) 
         {
             cout  <<fixed<<setprecision(4)<< "[+] - Root : " << x_new << endl;
-            cout << "[+] - Iteration Required : " << itr << endl;
+            cout << "[+] - itr Required : " << itr << endl;
             return;
         }
         x = x_new;
@@ -106,26 +111,30 @@ void newton_raphson(vector<double> coef)
 
 void secant(vector<double> coef)
 {
-    int x0,x1;
+    double x1,x2;
     cout<<"Enter initial guess x0 & x1: ";
-    cin>>x0>>x1;
+    cin>>x1>>x2;
     int itr = 0;
     while (true)
     {
         itr++;
-        double f_x0 = f(coef, x0);
-        double f_x1 = f(coef, x1);
-        double x2 = x1 - f_x1 * (x1 - x0) / (f_x1 - f_x0);
-        if (fabs(x2) < tolerance)
-            x2 = 0.0;
-        if (fabs(x2 - x1) <= tolerance || fabs(f(coef, x2)) <= tolerance)
+        double x = x2 - ((f(coef,x2) * (x2 - x1)) / (f(coef,x2) - f(coef,x1)));
+        if (fabs(x) < tolerance)
+            x = 0.0;
+        if (f(coef,x) == 0.0)
         {
-            cout <<fixed<<setprecision(4)<< "[+] - Root : " << x2 << endl;
-            cout << "[+] - Iteration Required : " << itr << endl;
+           cout  <<fixed<<setprecision(4)<< "[+] - Root : " << x << endl;
+            cout << "[+] - itr Required : " << itr << endl;
             return;
         }
-        x0 = x1;
+        if (fabs(x - x2) <= tolerance)
+        {
+             cout  <<fixed<<setprecision(4)<< "[+] - Root : " << x << endl;
+          cout << "[+] - itr Required : " << itr << endl;
+            return;
+        }
         x1 = x2;
+        x2 = x;
     }
 }
 void displayNonLinearEquationsMenu()
