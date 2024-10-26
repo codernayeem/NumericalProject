@@ -32,16 +32,16 @@ This console application implements various numerical methods for solving linear
    - `./numerical_methods`
 
 # Working Principle of Algorithms and Features
-
+## Linear
 ### 1. Jacobi Iterative Method
-The Jacobi method iteratively solves the system ( `Ax = b` ) by separating ( `A` ) into a diagonal component. 
+The Jacobi method iteratively solves the system `Ax = b` by separating `A` into its diagonal and non-diagonal parts.
 
 **Steps**:
 1. Initialize `x^(0)`.
 2. For each iteration `k`:
    - Update each element `x_i^(k+1)` using:
      ```
-     x_i^(k+1) = (b_i - sum(a_ij * x_j^(k) for j != i)) / a_ii
+     x_i^(k+1) = (b_i - sum(a_ij * x_j^(k)) for j != i) / a_ii
      ```
 3. Check for convergence by evaluating if the average error falls below a tolerance level.
 
@@ -52,31 +52,34 @@ The Jacobi method iteratively solves the system ( `Ax = b` ) by separating ( `A`
 ---
 
 ### 2. Gauss-Seidel Iterative Method
-The Gauss-Seidel method is similar to Jacobi but uses the most recent values of ( x ) during each update.
+The Gauss-Seidel method is similar to Jacobi but uses the most recent values of `x` during each update.
 
 **Steps**:
-1. Initialize \( x^{(0)} \).
-2. For each iteration \( k \):
-   - Update \( x_i^{(k+1)} \) using previously updated values:
-   ```
-   x_i^{(k+1)} = (b_i - sum(a_{ij} * x_j^{(k+1)} for j < i) - sum(a_{ij} * x_j^{(k)} for j > i)) / a_{ii}
-   ```
+1. Initialize `x^(0)`.
+2. For each iteration `k`:
+   - Update `x_i^(k+1)` using previously updated values:
+     ```
+     x_i^(k+1) = (b_i - sum(a_ij * x_j^(k+1)) for j < i - sum(a_ij * x_j^(k)) for j > i) / a_ii
+     ```
 3. Convergence is achieved if the average error is less than the tolerance level.
 
 **Features**:
 - Faster convergence by using updated values immediately.
+- Similar tolerance and diagonal dominance check as Jacobi.
 
 ---
 
 ### 3. Gauss Elimination
-Gauss Elimination transforms the matrix ( A ) into an upper triangular form to solve the system.
+Gauss Elimination transforms the matrix `A` into an upper triangular form to solve the system.
 
 **Steps**:
 1. Perform partial pivoting to select the largest element as the pivot.
-2. For each row ( i ):
+2. For each row `i`:
    - Eliminate variables below the pivot:
-   `A[j] = A[j] - (A[j][i] / A[i][i]) * A[i]`
-3. Use back substitution to solve for ( x ).
+     ```
+     A[j] = A[j] - (A[j][i] / A[i][i]) * A[i]
+     ```
+3. Use back substitution to solve for `x`.
 
 **Features**:
 - Allows handling of singular matrices with a result indicating infinite or no solutions.
@@ -84,14 +87,14 @@ Gauss Elimination transforms the matrix ( A ) into an upper triangular form to s
 ---
 
 ### 4. Gauss-Jordan Elimination
-An extension of Gauss Elimination, Gauss-Jordan transforms \( A \) into a reduced row-echelon form.
+An extension of Gauss Elimination, Gauss-Jordan transforms `A` into a reduced row-echelon form.
 
 **Steps**:
 1. For each column:
    - Select a pivot, divide the row by the pivot to make it 1.
 2. Eliminate other rows:
-   - For each row \( i \), subtract multiples of the pivot row to zero out the column.
-3. Solution vector \( x \) is obtained directly.
+   - For each row `i`, subtract multiples of the pivot row to zero out the column.
+3. Solution vector `x` is obtained directly.
 
 **Features**:
 - Provides a unique solution if it exists.
@@ -100,33 +103,80 @@ An extension of Gauss Elimination, Gauss-Jordan transforms \( A \) into a reduce
 ---
 
 ### 5. LU Factorization
-LU Factorization decomposes \( A \) as \( A = LU \), where \( L \) is a lower triangular matrix and \( U \) is an upper triangular matrix.
+LU Factorization decomposes `A` as `A = LU`, where `L` is a lower triangular matrix and `U` is an upper triangular matrix.
 
 **Steps**:
-1. Decompose \( A \) such that:
-   \[
-   A = LU
-   \]
-2. Solve \( Ly = b \) for \( y \) using forward substitution.
-3. Solve \( Ux = y \) for \( x \) using back substitution.
+1. Decompose `A` such that: `A = LU`
+2. Solve `Ly = b` for `y` using forward substitution.
+3. Solve `Ux = y` for `x` using back substitution.
 
 **Features**:
 - Efficient for systems with multiple right-hand side vectors.
-- Limited to \( n \leq 4 \) in this implementation.
+- Limited to `n <= 4` in this implementation.
+
+## Non-Linear 
+
+### 1. Bisection Method
+The Bisection Method is a bracketing method used to find the root of a function `f(x)` within an interval `[a, b]` where `f(a) * f(b) < 0`.
+
+**Steps**:
+1. Check that `f(a) * f(b) < 0`, ensuring a root exists within `[a, b]`.
+2. Calculate midpoint `x = (a + b) / 2`.
+3. If `f(x) == 0` or `(x - old_x) <= tolerance`, `x` is the root.
+4. If `f(a) * f(x) < 0`, set `b = x`; otherwise, set `a = x`.
+5. Repeat until convergence.
+
+**Features**:
+- Ensures convergence for continuous functions with opposite signs at `a` and `b`.
+- Includes tolerance-based convergence.
 
 ---
 
-### Key Mathematical Terms
+### 2. False Position (Regula Falsi) Method
+The False Position method also finds roots in a bracketing interval but uses a linear approximation for faster convergence.
 
-- **Diagonal Dominance**: A matrix \( A \) is diagonally dominant if \( |a_{ii}| > \sum_{j \neq i} |a_{ij}| \).
-- **Convergence Condition**: For iterative methods, convergence is reached if the average error, calculated as:
-  \[
-  \text{Error} = \frac{\sum_{i=1}^n |x_i^{(k+1)} - x_i^{(k)}|}{n}
-  \]
-  is below the tolerance.
-- **Partial Pivoting**: Selecting the largest absolute value in the column to avoid numerical instability.
+**Steps**:
+1. Ensure `f(a) * f(b) < 0` for the initial interval.
+2. Calculate `x` as: `x = (a * f(b) - b * f(a)) / (f(b) - f(a))`
+3. If `f(x) == 0` or `(x - old_x) <= tolerance`, `x` is the root.
+4. Update interval: if `f(a) * f(x) < 0`, set `b = x`; otherwise, set `a = x`.
+5. Repeat until convergence.
 
-The code includes tolerance settings, iterative limits, and back substitution routines for enhanced functionality.
+**Features**:
+- Faster than Bisection for some functions, but convergence depends on the function’s shape.
+
+---
+
+### 3. Newton-Raphson Method
+Newton-Raphson is an open method that approximates roots using derivatives. It requires an initial guess and differentiable function.
+
+**Steps**:
+1. Initialize with an initial guess `x`.
+2. For each iteration, update `x` as: `x_new = x - f(x) / f'(x)`
+3. If `f(x_new) < tolerance`, `x_new` is the root.
+4. If derivative `f'(x) == 0`, it indicates a division by zero, stopping the process.
+5. Repeat until convergence or maximum iterations are reached.
+
+**Features**:
+- Rapid convergence if the initial guess is close to the root.
+- Includes a synthetic division to deflate the polynomial after each root is found.
+
+---
+
+### 4. Secant Method
+The Secant Method approximates the derivative with finite differences, needing two initial points `x0` and `x1`.
+
+**Steps**:
+1. Given initial guesses `x0` and `x1`, calculate `x` as: `x = x1 - f(x1) * (x1 - x0) / (f(x1) - f(x0))`
+2. If `f(x) <= tolerance`, `x` is the root.
+3. Update `x0 = x1` and `x1 = x` for the next iteration.
+4. Repeat until convergence or maximum iterations.
+
+**Features**:
+- Faster than Newton-Raphson for some functions since it avoids computing the derivative explicitly.
+- Synthetic division is used to deflate polynomial equations after finding each root.
+
+---
 
 
 # Working Principle of Differential Equation Solver (Runge-Kutta Method)
