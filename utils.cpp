@@ -10,7 +10,7 @@
 #include <math.h>
 const int WIDTH = 60;
 const int HEIGHT = 20;
-const int DURATION = 15; // Adjust total frames for the animation duration
+const int DURATION = 20; // Adjust total frames for the animation duration
 const int TEXT_DELAY = 10; // Delay before showing the welcome message
 
 using namespace std;
