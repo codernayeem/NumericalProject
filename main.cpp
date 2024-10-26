@@ -1,4 +1,6 @@
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
 #include "linear_eqs.hpp"
 #include "non_linear_eqs.hpp"
 #include "diff_eqs.hpp"
