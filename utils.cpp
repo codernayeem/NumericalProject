@@ -7,6 +7,7 @@
 #include <thread>
 #include <vector>
 #include <cstdlib>
+#include <math.h>
 const int WIDTH = 60;
 const int HEIGHT = 20;
 const int DURATION = 15; // Adjust total frames for the animation duration
@@ -50,13 +51,11 @@ double f(const vector<double>& coef, double x) {
 }
 
 double fprime(const vector<double>& coef, double x) {
-    double result = 0.0;
-    double power = 1.0;
-    for (int i = coef.size() - 1; i > 0; --i) {
-        result += (coef.size() - i) * coef[i] * power;
-        power *= x;
+    double sum = 0;
+    for (int i = 0; i < coef.size() - 1; i++) {
+        sum += coef[i] * (coef.size() - i - 1) * pow(x, coef.size() - i - 2);
     }
-    return result;
+    return sum;
 }
 
 void printPolynomial(const vector<double>& coef) {
@@ -150,6 +149,3 @@ void displayMatrixRain() {
     }
     cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
 }
-
-
-   

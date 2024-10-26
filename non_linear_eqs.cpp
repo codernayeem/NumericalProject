@@ -1,7 +1,9 @@
 #include "non_linear_eqs.hpp"
 #include "utils.hpp"
-#include <bits/stdc++.h>
+#include <iostream>
 #include <math.h>
+#include <iomanip>
+#include <limits>
 const double tolerance = 0.0000001;
 using namespace std;
 
@@ -10,12 +12,12 @@ void bisection(vector<double> coef,double a,double b)
     cout << "[+] - Search interval for root = [" << a << ", " << b << "]" << endl;
     if (isnan(a) || isnan(b))
     {
-        cerr << "[!] - No Solution" << endl;
+        cout << "[!] - No Solution" << endl;
         return;
     }
     if (f(coef, a) * f(coef, b) >= 0)
     {
-        cerr << "[!] - The function does not change sign on the interval" << endl;
+        cout << "[!] - The function does not change sign on the interval" << endl;
         return;
     }
     double old_x=a;
@@ -27,8 +29,10 @@ void bisection(vector<double> coef,double a,double b)
         double f_x = f(coef, x);
         if (fabs(x-old_x) <= tolerance|| f_x==0.0)
         {
+            setColor(2, 0);
             cout <<fixed<<setprecision(4)<< "[+] - Root : " << x << endl;
-            cout << "[+] - Iteration Required : " << itr << endl;
+            setColor(7, 0);
+            cout << "[+] - itr Required : " << itr << endl;
             return;
         }
 
@@ -49,7 +53,7 @@ void false_position(vector<double> coef,double a,double b)
     cout << "[+] - Search interval for root = [" << a << ", " << b << "]" << endl;
     if (f(coef, a) * f(coef, b) >= 0)
     {
-        cerr << "[!] - The function does not change sign on the interval" << endl;
+        cout << "[!] - The function does not change sign on the interval" << endl;
         return;
     }
     double old_x=a;
@@ -61,8 +65,10 @@ void false_position(vector<double> coef,double a,double b)
         double f_x = f(coef, x);
         if (fabs(x-old_x) <= tolerance|| f_x==0.0)
         {
+            setColor(2, 0);
             cout <<fixed<<setprecision(4)<< "[+] - Root : " << x << endl;
-            cout << "[+] - Iteration Required : " << itr << endl;
+            setColor(7, 0);
+            cout << "[+] - itr Required : " << itr << endl;
             return;
         }
 
@@ -79,55 +85,94 @@ void false_position(vector<double> coef,double a,double b)
 
 }
 
-void newton_raphson(vector<double> coef)
-{
-     int x;
-    cout<<"Enter initial guess x0: ";
-    cin>>x;
-    int itr = 0;
-    while (true)
-    {
-        itr++;
-        double f_x = f(coef, x);
-        double f_prime_x = fprime(coef, x);
-        // Newton-Raphson update formula
-        double x_new = x - f_x / f_prime_x;
-         if (fabs(x_new) < tolerance)
-            x = 0.0;
-        if (fabs(x_new - x) <= tolerance ||f(coef,x_new) == 0.0)
-        {
-            cout  <<fixed<<setprecision(4)<< "[+] - Root : " << x_new << endl;
-            cout << "[+] - Iteration Required : " << itr << endl;
-            return;
+// Synthetic division to deflate the polynomial
+void syntheticDivision(vector<double>& coef, double root) {
+    vector<double> new_coef(coef.size() - 1);
+    new_coef[0] = coef[0];
+    for (int i = 1; i < new_coef.size(); ++i) {
+        new_coef[i] = coef[i] + root * new_coef[i - 1];
+    }
+    coef = new_coef;
+}
+
+// Newton-Raphson method to find a root
+double newton_raphson(const vector<double>& coef, double initial_guess, int maxIter = 500, double tolerance = 1e-10) {
+    double x = initial_guess, i;
+
+    for (i = 0; i < maxIter; ++i) {
+        double fx = f(coef, x);
+        double fpx = fprime(coef, x);
+
+        if (fabs(fpx) < tolerance){
+            cout << "[!] - Division by zero. Cannot Find Solution" << endl;
+            return numeric_limits<double>::infinity();
+        };
+
+        double x_new = x - fx / fpx;
+
+        if (fabs(f(coef, x_new)) < tolerance){
+            setColor(2, 0);
+            cout << fixed << setprecision(4) << "[+] - Root : " << x_new << endl;
+            setColor(7, 0);
+            cout << "[+] - itr Required : " << i+1 << endl;
+            return x_new;
         }
         x = x_new;
     }
+    
+    cout << "[!] - Maximum iterations reached. Cannot Find Solution" << endl;
+    return numeric_limits<double>::infinity();
 }
 
-void secant(vector<double> coef)
-{
-      int x0,x1;
- cout<<"Enter initial guess x0 & x1: ";
-    cin>>x0>>x1;
-    int itr = 0;
-    while (true)
-    {
-        itr++;
-        double f_x0 = f(coef, x0);
-        double f_x1 = f(coef, x1);
-        double x2 = x1 - f_x1 * (x1 - x0) / (f_x1 - f_x0);
-         if (fabs(x2) < tolerance)
-            x2 = 0.0;
-        if (fabs(x2 - x1) <= tolerance || f(coef,x2) ==0.0)
-        {
-            cout <<fixed<<setprecision(4)<< "[+] - Root : " << x2 << endl;
-            cout << "[+] - Iteration Required : " << itr << endl;
+void findRoots_newton_raphson(vector<double> coef) {
+    double x;
+    cout<<"Enter initial guess x0: ";
+    cin>>x;
+    while (coef.size() > 1) {
+        double r = newton_raphson(coef, x);
+        if (r == numeric_limits<double>::infinity()) {
             return;
         }
-        x0 = x1;
-        x1 = x2;
+        syntheticDivision(coef, r);
     }
 }
+
+double secant(vector<double> coef, double x0, double x1, double maxIter = 2000, double tolerance = 1e-7)
+{
+    int itr = 0;
+    while (itr < maxIter)
+    {
+        itr++;
+        double x = x1 - ((f(coef,x1) * (x1 - x0)) / (f(coef,x1) - f(coef,x0)));
+        
+        if (fabs(f(coef, x)) <= tolerance)
+        {
+            setColor(2, 0);
+            cout  << "[+] - Root : " << x << endl;
+            setColor(7, 0);
+            cout << "[+] - itr Required : " << itr << endl;
+            return x;
+        }
+        x0 = x1;
+        x1 = x;
+    }
+    cout << "[!] - Maximum iterations reached. Cannot Find Solution" << endl;
+    return numeric_limits<double>::infinity();
+}
+
+void findRoots_secant(vector<double> coef) {
+    double x0,x1;
+    cout<<"Enter initial guess x0 & x1: ";
+    cin>>x0>>x1;
+    while (coef.size() > 1) {
+        double r = secant(coef, x0, x1);
+        if (r == numeric_limits<double>::infinity()) {
+            return;
+        }
+        syntheticDivision(coef, r);
+    }
+}
+
 void displayNonLinearEquationsMenu()
 {
     clearScreen();
@@ -213,14 +258,12 @@ void solveNonLinearEquations()
         } 
     }
     else if (choice == 3){
-       
-        newton_raphson(coef);
+        findRoots_newton_raphson(coef);
     }
     else if (choice == 4){
-      
-        secant(coef);
+        findRoots_secant(coef);
     }
-    cout << endl
-         << "Press any key to continue..." << endl;
+
+    cout << endl << "Press any key to continue..." << endl;
     getChar();
 }
